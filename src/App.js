@@ -1,35 +1,20 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import MoviesList from './components/MoviesList';
 import './App.css';
 
 function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error,setError]=useState(null);
-  const [retrying,setRetrying]=useState(false);
-  const [retryInterval,setRetryInterval]=useState(null);
+  const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (retrying) {
-      const timerId = setInterval(() => {
-        fetchMoviesHandler();
-      }, 5000);
-
-      setRetryInterval(timerId);
-    } else {
-      clearInterval(retryInterval);
-      setRetryInterval(null);
-    }
-
-    return () => clearInterval(retryInterval);
-  }, [retrying]);
-  async function fetchMoviesHandler() {
+  const fetchMoviesHandler=useCallback(async ()=>{
     setIsLoading(true);
     setError(null);
+    console.log("hello")
     try {
       const response = await fetch('https://swapi.dev/api/films/');
-      if(!response.ok){
-        throw new Error("something went wrong ....Retrying");
+      if (!response.ok) {
+        throw new Error("something went wrong");
       }
       const data = await response.json();
 
@@ -42,32 +27,25 @@ function App() {
         };
       });
       setMovies(transformedMovies);
-      setRetrying(false);
     }
     catch (error) {
       setError(error.message);
-      setRetrying(true);
     }
     setIsLoading(false);
+  },[])
+  useEffect(()=>{
+    fetchMoviesHandler();
+  },[fetchMoviesHandler]);
+
+  let content = <p>Found No Movies.</p>;
+  if (movies.length > 0) {
+    content = <MoviesList movies={movies} />
   }
-  function handleCancelRetry() {
-    setRetrying(false);
-    clearInterval(retryInterval);
+  if (error) {
+    content =<p>{error}</p>
   }
-  let content=<p>Found No Movies.</p>;
-  if(movies.length>0){
-     content=<MoviesList movies={movies} />
-  }
-  if(error){
-    content = (
-      <React.Fragment>
-        <p>{error}</p>
-        <button onClick={handleCancelRetry}>Cancel Retry</button>
-      </React.Fragment>
-    );
-  }
-  if(isLoading){
-    content=<p>Loading...</p>
+  if (isLoading) {
+    content = <p>Loading...</p>
   }
   return (
     <React.Fragment>
@@ -75,7 +53,7 @@ function App() {
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
       <section>
-          {content}
+        {content}
       </section>
     </React.Fragment>
   );
