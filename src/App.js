@@ -6,6 +6,11 @@ function App() {
   const [movies, setMovies] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [formData,setFormData]=useState({
+    title:"",
+    openingText:"",
+    releaseDate:""
+  });
 
   const fetchMoviesHandler=useCallback(async ()=>{
     setIsLoading(true);
@@ -47,8 +52,43 @@ function App() {
   if (isLoading) {
     content = <p>Loading...</p>
   }
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+  const consoleBrowser = (event) => {
+    event.preventDefault();
+    console.log(formData);
+    setFormData({
+      title: '',
+      openingText: '',
+      releaseDate: '',
+    });
+  };
   return (
     <React.Fragment>
+      <section>
+        <form>
+          <div style={{textAlign:"left"}}>
+            <strong>Title</strong><br/>
+            <input type='text' name="title" value={formData.title} onChange={handleChange}/>
+          </div>
+          <br/>
+          <div style={{textAlign:"left"}}>
+            <strong>Opening Text</strong><br/>
+            <input type='text' name="openingText" value={formData.openingText} onChange={handleChange}/>
+          </div>
+          <br/>
+          <div style={{textAlign:"left"}}>
+            <strong>Release Date</strong><br/>
+            <input type='date' name="releaseDate" value={formData.releaseDate} onChange={handleChange}/>
+          </div>
+          <button onClick={consoleBrowser}>Add Movie</button>
+        </form>
+      </section>
       <section>
         <button onClick={fetchMoviesHandler}>Fetch Movies</button>
       </section>
